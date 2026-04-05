@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --danger: #f43f5e;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 { font-size: 22px; color: var(--accent); margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; }
+        
+        input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        /* Table Area */
+        .search-bar { width: 100%; margin-bottom: 20px; background: rgba(15, 23, 42, 0.8); }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        th { text-align: left; padding: 12px; color: var(--text-dim); font-size: 12px; text-transform: uppercase; }
+        
+        tr.item-row td { background: rgba(51, 65, 85, 0.4); padding: 16px 12px; font-size: 14px; }
+        tr.item-row td:first-child { border-radius: 10px 0 0 10px; border-left: 4px solid var(--accent); }
+        tr.item-row td:last-child { border-radius: 0 10px 10px 0; text-align: right; }
+
+        .price-text { color: var(--success); font-weight: 600; }
+        .total-text { font-weight: 700; color: white; }
+        
+        .delete-btn {
+            background: none;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .delete-btn:hover { background: var(--danger); color: white; }
+
+        /* Footer Summary */
+        .summary-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #334155;
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+            font-size: 18px;
+        }
+
+        .grand-total { color: var(--success); font-weight: 800; }
+
+        @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="glass-card">
+        <h1> Hamza Store Inventory </h1>
+        <div class="input-group">
+            <label>Product Name</label>
+            <input type="text" id="itemName" placeholder="e.g. Mobile Screen">
+        </div>
+        <div class="input-group">
+            <label>Price per Unit</label>
+            <input type="number" id="itemPrice" placeholder="0.00">
+        </div>
+        <div class="input-group">
+            <label>Quantity</label>
+            <input type="number" id="itemQty" placeholder="0">
+        </div>
+        <button class="btn-primary" onclick="addItem()">Add to Inventory</button>
+    </div>
+
+    <div class="glass-card">
+        <input type="text" id="searchBox" class="search-bar" placeholder="🔍 Search by product name..." onkeyup="renderTable()">
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="inventoryList"></tbody>
+        </table>
+
+        <div id="emptyMessage" style="text-align: center; color: var(--text-dim); padding: 40px; display: none;">
+            No records found.
+        </div>
+
+        <div class="summary-footer">
+            <span>Grand Total Inventory Value:</span>
+            <span class="grand-total" id="grandTotal">0.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('finance_storage_v1')) || [];
+
+    function addItem() {
+        const name = document.getElementById('itemName').value;
+        const price = parseFloat(document.getElementById('itemPrice').value);
+        const qty = parseInt(document.getElementById('itemQty').value);
+
+        if (!name || isNaN(price) || isNaN(qty)) {
+            alert("Fill all fields correctly!");
+            return;
+        }
+
+        const newItem = {
+            id: Date.now(),
+            name,
+            price,
+            qty,
+            total: price * qty
+        };
+
+        db.unshift(newItem);
+        saveAndRefresh();
+        
+        // Reset inputs
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemPrice').value = '';
+        document.getElementById('itemQty').value = '';
+        document.getElementById('itemName').focus();
+    }
+
+    function deleteItem(id) {
+        db = db.filter(item => item.id !== id);
+        saveAndRefresh();
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('finance_storage_v1', JSON.stringify(db));
+        renderTable();
+    }
+
+    function renderTable() {
+        const list = document.getElementById('inventoryList');
+        const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+        const emptyMsg = document.getElementById('emptyMessage');
+        const grandTotalDisplay = document.getElementById('grandTotal');
+        
+        list.innerHTML = '';
+        let totalValue = 0;
+
+        const filteredData = db.filter(item => item.name.toLowerCase().includes(searchTerm));
+
+        if (filteredData.length === 0) {
+            emptyMsg.style.display = 'block';
+        } else {
+            emptyMsg.style.display = 'none';
+            filteredData.forEach(item => {
+                const rowTotal = item.price * item.qty;
+                totalValue += rowTotal;
+
+                const row = document.createElement('tr');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td class="price-text">${item.price.toLocaleString()}</td>
+                    <td>${item.qty}</td>
+                    <td class="total-text">${rowTotal.toLocaleString()}</td>
+                    <td><button class="delete-btn" onclick="deleteItem(${item.id})">Delete</button></td>
+                `;
+                list.appendChild(row);
+            });
+        }
+        grandTotalDisplay.innerText = totalValue.toLocaleString();
+    }
+
+    renderTable();
+</script>
+
+</body>
+</html>
